@@ -50,6 +50,7 @@ resource "proxmox_virtual_environment_container" "pihole" {
   }
 
   lifecycle {
+    prevent_destroy = true
     ignore_changes = [
       operating_system
     ]
