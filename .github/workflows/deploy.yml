@@ -75,6 +75,12 @@ jobs:
           echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/homelab_ansible
           chmod 600 ~/.ssh/homelab_ansible
 
+      - name: Wait for SSH on docker host
+        run: |
+          IP=$(echo "${{ secrets.DOCKER_HOST_IP }}" | cut -d'/' -f1)
+          until nc -zw5 $IP 22; do echo "waiting for SSH..."; sleep 5; done
+        timeout-minutes: 3
+
       - name: Install Ansible
         run: pip install ansible
 
