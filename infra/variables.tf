@@ -23,3 +23,8 @@ variable "pihole_ip" {
   description = "Pi-hole static IP with CIDR ex: 192.168.68.200/24"
   type        = string
 }
+
+variable "docker_host_ip" {
+  description = "Docker host static IP with CIDR ex: 192.168.68.201/24"
+  type        = string
+}

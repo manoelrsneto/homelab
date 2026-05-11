@@ -27,16 +27,6 @@ jobs:
         run: terraform init
         working-directory: infra
 
-      - name: Debug Proxmox vars
-        run: |
-          echo "URL length: ${#TF_VAR_proxmox_url}"
-          echo "USER length: ${#TF_VAR_proxmox_user}"
-          echo "PASS length: ${#TF_VAR_proxmox_password}"
-        env:
-          TF_VAR_proxmox_url: ${{ secrets.PROXMOX_URL }}
-          TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
-          TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
-
       - name: Terraform Plan
         run: terraform plan
         working-directory: infra
@@ -46,6 +36,7 @@ jobs:
           TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
           TF_VAR_gateway: ${{ secrets.GATEWAY }}
           TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
+          TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
@@ -57,6 +48,7 @@ jobs:
           TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
           TF_VAR_gateway: ${{ secrets.GATEWAY }}
           TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
+          TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
 
   ansible:
     name: Ansible
@@ -70,6 +62,9 @@ jobs:
         uses: tailscale/github-action@v2
         with:
           authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Write inventory
+        run: echo "${{ secrets.ANSIBLE_INVENTORY }}" > ansible/inventory/hosts.ini
 
       - name: Install Ansible
         run: pip install ansible
