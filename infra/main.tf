@@ -1,4 +1,11 @@
 terraform {
+  cloud {
+    organization = "homelab-manoel"
+    workspaces {
+      name = "homelab"
+    }
+  }
+
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
