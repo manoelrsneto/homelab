@@ -1,16 +1,46 @@
 # homelab
 
-Personal homelab infrastructure managed as code.
+![Deploy](https://img.shields.io/github/actions/workflow/status/manoelrsneto/homelab/deploy.yml?style=for-the-badge&logo=github-actions&logoColor=white&label=Deploy)
+![Proxmox](https://img.shields.io/badge/Proxmox-E57000?style=for-the-badge&logo=proxmox&logoColor=white)
+![Terraform](https://img.shields.io/badge/Terraform-7B42BC?style=for-the-badge&logo=terraform&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Tailscale](https://img.shields.io/badge/Tailscale-242424?style=for-the-badge&logo=tailscale&logoColor=white)
+
+> Personal homelab running on a repurposed laptop — fully automated from provisioning to deployment via CI/CD.
+
+---
+
+## Overview
+
+This repo contains the full infrastructure-as-code for my homelab. Every change pushed to `main` automatically provisions infrastructure with Terraform and configures hosts with Ansible — no manual steps required.
+
+**Hardware:** Dell Inspiron 15 3567 · 16GB RAM · 240GB SSD
+
+## Architecture
+
+```
+GitHub Actions
+    ├── Terraform  →  Proxmox (LXC provisioning)
+    └── Ansible    →  Docker Host (configuration)
+                          └── Docker Compose (services)
+
+Tailscale mesh VPN
+    ├── Proxmox host (subnet router → 192.168.68.0/24)
+    └── Remote access from anywhere
+```
 
 ## Stack
 
-- **Proxmox** — hypervisor running on a Dell Inspiron 15 3567 (16GB RAM, 240GB SSD)
-- **Terraform** — LXC container and VM provisioning
-- **Ansible** — configuration management and app deployment
-- **Docker Compose** — service orchestration
-- **Caddy** — reverse proxy with automatic SSL
-- **Tailscale** — remote access via mesh VPN
-- **Cloudflare Tunnel** — secure external access via manoelneto.dev
+| Layer | Tool | Purpose |
+|---|---|---|
+| Hypervisor | Proxmox VE | LXC containers and VMs |
+| Provisioning | Terraform | Infrastructure as code |
+| Configuration | Ansible | Host setup and app deployment |
+| Orchestration | Docker Compose | Service management |
+| DNS | Pi-hole | Network-wide ad blocking |
+| Reverse Proxy | Caddy | Automatic SSL termination |
+| VPN | Tailscale | Secure remote access |
+| Tunnel | Cloudflare Tunnel | External access via manoelneto.dev |
 
 ## Services
 
@@ -20,33 +50,17 @@ Personal homelab infrastructure managed as code.
 | Home Assistant | Home automation |
 | Postgres | Central database |
 | Grafana + Prometheus + Loki | Observability stack |
-| Caddy | Reverse proxy |
 | Uptime Kuma | Uptime monitoring |
 | Homepage | Services dashboard |
 
-## Prerequisites
+## CI/CD Pipeline
 
-- Terraform >= 1.0
-- Proxmox VE >= 8.0
-- Tailscale installed on Proxmox
+Every push to `main` triggers:
 
-## Usage
+1. **Terraform** — provisions or updates LXC containers on Proxmox
+2. **Ansible** — installs Docker, clones this repo, applies configuration
 
-1. Copy the variables example:
-
-```sh
-cp infra/terraform.tfvars.example infra/terraform.tfvars
-```
-
-2. Fill in the values in `infra/terraform.tfvars`
-
-3. Initialize and apply:
-
-```sh
-cd infra
-terraform init
-terraform apply
-```
+Secrets (Proxmox credentials, SSH keys, Tailscale authkey) are stored in GitHub Actions secrets and never committed to the repo.
 
 ## Repository Structure
 
@@ -55,21 +69,34 @@ homelab/
 ├── infra/
 │   ├── main.tf
 │   ├── variables.tf
-│   ├── outputs.tf
-│   ├── terraform.tfvars.example
 │   └── containers/
-│       └── pihole.tf
+│       ├── pihole.tf
+│       └── docker-host.tf
+├── ansible/
+│   ├── inventory/
+│   └── playbooks/
+│       └── docker.yml
 ├── apps/
 │   └── pihole/
 │       └── docker-compose.yml
-├── docs/
-│   └── architecture.md
 └── .github/
     └── workflows/
         └── deploy.yml
 ```
 
+## Local Development
+
+```sh
+# Copy and fill in your variables
+cp infra/terraform.tfvars.example infra/terraform.tfvars
+
+# Provision infrastructure
+cd infra
+terraform init
+terraform apply
+```
+
 ## Access
 
-- **Local network** — via IP directly
-- **Remote** — via Tailscale or Cloudflare Tunnel (manoelneto.dev)
+- **Local** — direct IP on `192.168.68.0/24`
+- **Remote** — via Tailscale or Cloudflare Tunnel (`manoelneto.dev`)
