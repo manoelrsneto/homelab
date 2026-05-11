@@ -22,8 +22,9 @@ provider "proxmox" {
 }
 
 module "containers" {
-  source         = "./containers"
-  gateway        = var.gateway
-  pihole_ip      = var.pihole_ip
-  docker_host_ip = var.docker_host_ip
+  source             = "./containers"
+  gateway            = var.gateway
+  pihole_ip          = var.pihole_ip
+  docker_host_ip     = var.docker_host_ip
+  ansible_public_key = var.ansible_public_key
 }

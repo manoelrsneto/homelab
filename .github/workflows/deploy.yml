@@ -37,6 +37,7 @@ jobs:
           TF_VAR_gateway: ${{ secrets.GATEWAY }}
           TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
           TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
+          TF_VAR_ansible_public_key: ${{ secrets.ANSIBLE_SSH_PUBLIC_KEY }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
@@ -49,6 +50,7 @@ jobs:
           TF_VAR_gateway: ${{ secrets.GATEWAY }}
           TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
           TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
+          TF_VAR_ansible_public_key: ${{ secrets.ANSIBLE_SSH_PUBLIC_KEY }}
 
   ansible:
     name: Ansible
@@ -66,10 +68,16 @@ jobs:
       - name: Write inventory
         run: echo "${{ secrets.ANSIBLE_INVENTORY }}" > ansible/inventory/hosts.ini
 
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/homelab_ansible
+          chmod 600 ~/.ssh/homelab_ansible
+
       - name: Install Ansible
         run: pip install ansible
 
       - name: Run Ansible Playbook
-        run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/docker.yml
+        run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/docker.yml --private-key ~/.ssh/homelab_ansible
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"

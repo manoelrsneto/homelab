@@ -9,3 +9,7 @@ variable "pihole_ip" {
 variable "docker_host_ip" {
   type = string
 }
+
+variable "ansible_public_key" {
+  type = string
+}

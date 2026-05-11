@@ -8,6 +8,9 @@ resource "proxmox_virtual_environment_container" "docker_host" {
     dns {
       servers = [split("/", var.pihole_ip)[0]]
     }
+    user_account {
+      keys = [var.ansible_public_key]
+    }
     ip_config {
       ipv4 {
         address = var.docker_host_ip

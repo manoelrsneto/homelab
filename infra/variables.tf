@@ -28,3 +28,8 @@ variable "docker_host_ip" {
   description = "Docker host static IP with CIDR ex: 192.168.68.201/24"
   type        = string
 }
+
+variable "ansible_public_key" {
+  description = "SSH public key for Ansible access"
+  type        = string
+}
