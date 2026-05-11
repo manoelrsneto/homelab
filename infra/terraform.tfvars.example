@@ -1,0 +1,5 @@
+proxmox_url      = "https://PROXMOX_IP:8006/"
+proxmox_user     = "root@pam"
+proxmox_password = ""
+gateway          = "192.168.X.1"
+pihole_ip        = "192.168.X.200/24"
