@@ -6,7 +6,7 @@ resource "proxmox_virtual_environment_container" "docker_host" {
   initialization {
     hostname = "docker-host"
     dns {
-      servers = ["192.168.68.200"]
+      servers = [split("/", var.pihole_ip)[0]]
     }
     ip_config {
       ipv4 {
