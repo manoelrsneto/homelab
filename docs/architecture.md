@@ -49,7 +49,7 @@ grafana.manoelneto.dev  uptime.manoelneto.dev  home.manoelneto.dev
 | Item | Spec |
 |---|---|
 | Model | Dell Inspiron 15 3567 |
-| CPU | Intel Core i5-7200U |
+| CPU | Intel Core i3 |
 | RAM | 16GB DDR4 2400MHz |
 | Storage | 240GB SSD |
 | Hypervisor | Proxmox VE 9.1 |

@@ -13,7 +13,7 @@
 
 ## Hardware
 
-**Dell Inspiron 15 3567** · Intel i5-7200U · 16GB RAM · 240GB SSD · Proxmox VE 9.1
+**Dell Inspiron 15 3567** · Intel i3 · 16GB RAM · 240GB SSD · Proxmox VE 9.1
 
 ## Architecture
 
