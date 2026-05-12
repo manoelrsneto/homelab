@@ -1,5 +1,9 @@
 proxmox_url      = "https://PROXMOX_IP:8006/"
 proxmox_user     = "root@pam"
 proxmox_password = ""
+# proxmox_node   = "homelab"   # default: homelab
+# datastore_id   = "local-lvm" # default: local-lvm
 gateway          = "192.168.X.1"
 pihole_ip        = "192.168.X.200/24"
+docker_host_ip   = "192.168.X.201/24"
+ansible_public_key = "ssh-ed25519 AAAA..."

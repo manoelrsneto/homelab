@@ -1,0 +1,7 @@
+- Dev:
+    - GitHub:
+        - href: https://github.com/manoelrsneto/homelab
+          icon: github.svg
+    - Terraform Cloud:
+        - href: https://app.terraform.io
+          icon: terraform.svg

@@ -1,0 +1,7 @@
+profile: min
+
+exclude_paths:
+  - .git/
+  - infra/
+  - apps/
+  - secrets/

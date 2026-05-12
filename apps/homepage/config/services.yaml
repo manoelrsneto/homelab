@@ -1,0 +1,31 @@
+- Infrastructure:
+    - Proxmox:
+        href: https://192.168.68.100:8006
+        description: Hypervisor
+        icon: proxmox.svg
+    - Pi-hole:
+        href: http://pihole.home/admin
+        description: DNS & Ad Blocking
+        icon: pi-hole.svg
+    - Home Assistant:
+        href: http://homeassistant.home
+        description: Home Automation
+        icon: home-assistant.svg
+    - NPM:
+        href: http://npm.home
+        description: Reverse Proxy
+        icon: nginx-proxy-manager.svg
+
+- Monitoring:
+    - Grafana:
+        href: http://grafana.home
+        description: Dashboards
+        icon: grafana.svg
+    - Prometheus:
+        href: http://192.168.68.201:9090
+        description: Metrics
+        icon: prometheus.svg
+    - Uptime Kuma:
+        href: http://uptime.home
+        description: Uptime Monitoring
+        icon: uptime-kuma.svg

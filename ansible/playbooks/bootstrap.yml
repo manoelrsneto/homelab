@@ -1,0 +1,28 @@
+---
+- name: Bootstrap docker-host
+  hosts: docker_host
+  become: true
+
+  roles:
+    - docker
+
+  tasks:
+    - name: Create /apps directory
+      file:
+        path: /apps
+        state: directory
+        mode: "0755"
+
+    - name: Clone homelab repo
+      git:
+        repo: https://github.com/manoelrsneto/homelab.git
+        dest: /apps/homelab
+        update: true
+
+    - name: Create homelab Docker network
+      command: docker network create homelab
+      register: network_result
+      failed_when:
+        - network_result.rc != 0
+        - '"already exists" not in network_result.stderr'
+      changed_when: network_result.rc == 0

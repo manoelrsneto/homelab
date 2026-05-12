@@ -9,9 +9,21 @@ variable "proxmox_user" {
 }
 
 variable "proxmox_password" {
-  description = "Proxmox password"
+  description = "Proxmox user password"
   type        = string
   sensitive   = true
+}
+
+variable "proxmox_node" {
+  description = "Proxmox node name"
+  type        = string
+  default     = "homelab"
+}
+
+variable "datastore_id" {
+  description = "Proxmox datastore ID"
+  type        = string
+  default     = "local-lvm"
 }
 
 variable "gateway" {
@@ -31,10 +43,5 @@ variable "docker_host_ip" {
 
 variable "ansible_public_key" {
   description = "SSH public key for Ansible access"
-  type        = string
-}
-
-variable "homeassistant_ip" {
-  description = "Home Assistant static IP with CIDR ex: 192.168.68.202/24"
   type        = string
 }

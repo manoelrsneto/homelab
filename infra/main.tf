@@ -9,7 +9,11 @@ terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "~> 0.70"
+      version = "~> 0.106"
+    }
+    null = {
+      source  = "hashicorp/null"
+      version = "~> 3.0"
     }
   }
 }
@@ -19,19 +23,4 @@ provider "proxmox" {
   username = var.proxmox_user
   password = var.proxmox_password
   insecure = true
-}
-
-module "containers" {
-  source             = "./containers"
-  gateway            = var.gateway
-  pihole_ip          = var.pihole_ip
-  docker_host_ip     = var.docker_host_ip
-  ansible_public_key = var.ansible_public_key
-}
-
-module "vms" {
-  source           = "./vms"
-  proxmox_url      = var.proxmox_url
-  proxmox_password = var.proxmox_password
-  homeassistant_ip = var.homeassistant_ip
 }

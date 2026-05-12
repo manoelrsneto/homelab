@@ -1,0 +1,67 @@
+name: Apps
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/**"
+      - "ansible/**"
+      - "secrets/**"
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          args: --accept-routes
+
+      - name: Install age
+        run: sudo apt-get install -y age
+
+      - name: Install sops
+        run: |
+          curl -LO https://github.com/getsops/sops/releases/download/v3.9.4/sops-v3.9.4.linux.amd64
+          sudo install sops-v3.9.4.linux.amd64 /usr/local/bin/sops
+          rm sops-v3.9.4.linux.amd64
+
+      - name: Decrypt secrets
+        run: sops --decrypt secrets/apps.sops.yaml > /tmp/secrets.yml
+        env:
+          SOPS_AGE_KEY: ${{ secrets.SOPS_AGE_KEY }}
+
+      - name: Write inventory
+        run: echo "${{ secrets.ANSIBLE_INVENTORY }}" > ansible/inventory/hosts.ini
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/homelab_ansible
+          chmod 600 ~/.ssh/homelab_ansible
+
+      - name: Wait for SSH on docker host
+        run: |
+          IP=$(echo "${{ secrets.DOCKER_HOST_IP }}" | cut -d'/' -f1)
+          until ssh-keyscan -T 5 $IP 2>/dev/null | grep -q ssh; do
+            echo "waiting for SSH..."; sleep 5
+          done
+        timeout-minutes: 3
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Bootstrap docker-host
+        run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/bootstrap.yml --private-key ~/.ssh/homelab_ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"
+
+      - name: Deploy services
+        run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/deploy.yml --private-key ~/.ssh/homelab_ansible --extra-vars @/tmp/secrets.yml
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"

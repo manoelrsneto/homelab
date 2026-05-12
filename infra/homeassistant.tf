@@ -22,7 +22,7 @@ resource "null_resource" "haos_image" {
 }
 
 resource "proxmox_virtual_environment_vm" "homeassistant" {
-  node_name  = "homelab"
+  node_name  = var.proxmox_node
   vm_id      = 102
   name       = "homeassistant"
   depends_on = [null_resource.haos_image]
@@ -43,13 +43,13 @@ resource "proxmox_virtual_environment_vm" "homeassistant" {
   bios = "ovmf"
 
   efi_disk {
-    datastore_id       = "local-lvm"
-    type               = "4m"
-    pre_enrolled_keys  = false
+    datastore_id      = var.datastore_id
+    type              = "4m"
+    pre_enrolled_keys = false
   }
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.datastore_id
     file_id      = "local:iso/${local.haos_image_name}"
     interface    = "scsi0"
     size         = 32

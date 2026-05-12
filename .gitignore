@@ -8,5 +8,8 @@ infra/.terraform.lock.hcl
 # Env files
 **/.env
 
+# SOPS — plaintext secrets nunca commitados, só o .sops.yaml (criptografado)
+secrets/apps.yaml
+
 # OS
 .DS_Store

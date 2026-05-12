@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_container" "pihole" {
-  node_name    = "homelab"
+  node_name    = var.proxmox_node
   vm_id        = 100
   unprivileged = true
 
@@ -19,6 +19,11 @@ resource "proxmox_virtual_environment_container" "pihole" {
     }
   }
 
+  operating_system {
+    template_file_id = "local:vztmpl/debian-12-standard_12.12-1_amd64.tar.zst"
+    type             = "debian"
+  }
+
   cpu {
     cores = 1
   }
@@ -29,7 +34,7 @@ resource "proxmox_virtual_environment_container" "pihole" {
   }
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.datastore_id
     size         = 4
   }
 
@@ -51,8 +56,6 @@ resource "proxmox_virtual_environment_container" "pihole" {
 
   lifecycle {
     prevent_destroy = true
-    ignore_changes = [
-      operating_system
-    ]
+    ignore_changes  = [operating_system]
   }
 }

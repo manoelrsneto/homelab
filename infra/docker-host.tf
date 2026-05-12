@@ -1,5 +1,5 @@
 resource "proxmox_virtual_environment_container" "docker_host" {
-  node_name    = "homelab"
+  node_name    = var.proxmox_node
   vm_id        = 101
   unprivileged = true
 
@@ -37,8 +37,8 @@ resource "proxmox_virtual_environment_container" "docker_host" {
   }
 
   disk {
-    datastore_id = "local-lvm"
-    size         = 8
+    datastore_id = var.datastore_id
+    size         = 80
   }
 
   network_interface {
@@ -59,8 +59,6 @@ resource "proxmox_virtual_environment_container" "docker_host" {
 
   lifecycle {
     prevent_destroy = true
-    ignore_changes = [
-      operating_system
-    ]
+    ignore_changes  = [operating_system]
   }
 }
