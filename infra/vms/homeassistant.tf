@@ -40,13 +40,20 @@ resource "proxmox_virtual_environment_vm" "homeassistant" {
     dedicated = 2048
   }
 
+  bios = "ovmf"
+
+  efi_disk {
+    datastore_id       = "local-lvm"
+    type               = "4m"
+    pre_enrolled_keys  = false
+  }
+
   disk {
     datastore_id = "local-lvm"
     file_id      = "local:iso/${local.haos_image_name}"
     interface    = "scsi0"
     size         = 32
     discard      = "on"
-    iothread     = true
   }
 
   network_device {
@@ -58,6 +65,6 @@ resource "proxmox_virtual_environment_vm" "homeassistant" {
 
   lifecycle {
     prevent_destroy = true
-    ignore_changes  = [boot_order]
+    ignore_changes  = [boot_order, efi_disk, bios]
   }
 }
