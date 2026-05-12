@@ -33,8 +33,8 @@ grafana.manoelneto.dev  uptime.manoelneto.dev  home.manoelneto.dev
         │                    │                    │
      Pi-hole           docker-host          homeassistant
  192.168.68.200      192.168.68.201         192.168.68.202
-     LXC 100            LXC 101               VM 102
-                    ├── Portainer             (HAOS)
+     LXC 100            LXC 101            VM 102 (HAOS)
+                    ├── Portainer
                     ├── NPM
                     ├── Grafana
                     ├── Prometheus
