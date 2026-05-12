@@ -28,3 +28,10 @@ module "containers" {
   docker_host_ip     = var.docker_host_ip
   ansible_public_key = var.ansible_public_key
 }
+
+module "vms" {
+  source           = "./vms"
+  gateway          = var.gateway
+  pihole_ip        = var.pihole_ip
+  homeassistant_ip = var.homeassistant_ip
+}

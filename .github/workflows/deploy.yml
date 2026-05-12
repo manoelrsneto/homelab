@@ -38,6 +38,7 @@ jobs:
           TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
           TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
           TF_VAR_ansible_public_key: ${{ secrets.ANSIBLE_SSH_PUBLIC_KEY }}
+          TF_VAR_homeassistant_ip: ${{ secrets.HOMEASSISTANT_IP }}
 
       - name: Terraform Apply
         if: github.ref == 'refs/heads/main'
@@ -51,6 +52,7 @@ jobs:
           TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
           TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
           TF_VAR_ansible_public_key: ${{ secrets.ANSIBLE_SSH_PUBLIC_KEY }}
+          TF_VAR_homeassistant_ip: ${{ secrets.HOMEASSISTANT_IP }}
 
   ansible:
     name: Ansible
@@ -78,7 +80,7 @@ jobs:
       - name: Wait for SSH on docker host
         run: |
           IP=$(echo "${{ secrets.DOCKER_HOST_IP }}" | cut -d'/' -f1)
-          until nc -zw5 $IP 22; do echo "waiting for SSH..."; sleep 5; done
+          until ssh-keyscan -T 5 $IP 2>/dev/null | grep -q ssh; do echo "waiting for SSH..."; sleep 5; done
         timeout-minutes: 3
 
       - name: Install Ansible

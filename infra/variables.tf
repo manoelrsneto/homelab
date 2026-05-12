@@ -33,3 +33,8 @@ variable "ansible_public_key" {
   description = "SSH public key for Ansible access"
   type        = string
 }
+
+variable "homeassistant_ip" {
+  description = "Home Assistant static IP with CIDR ex: 192.168.68.202/24"
+  type        = string
+}
