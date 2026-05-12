@@ -26,3 +26,8 @@
         - network_result.rc != 0
         - '"already exists" not in network_result.stderr'
       changed_when: network_result.rc == 0
+
+    - name: Start Portainer
+      command: docker compose up -d
+      args:
+        chdir: /apps/homelab/apps/portainer

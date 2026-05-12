@@ -36,13 +36,13 @@ Cloudflare Tunnel → manoelneto.dev → NPM → internal services
 |---|---|---|
 | Hypervisor | Proxmox VE | LXC containers and VMs |
 | Provisioning | Terraform + TF Cloud | Infrastructure as code |
-| Configuration | Ansible | Host bootstrap and service deployment |
+| Configuration | Ansible | Host bootstrap (Docker install + Portainer) |
 | Orchestration | Docker Compose | Service management |
 | DNS | Pi-hole | Network-wide ad blocking and local DNS |
 | Reverse Proxy | Nginx Proxy Manager | SSL termination and domain routing |
 | VPN | Tailscale | Secure remote access |
 | Tunnel | Cloudflare Tunnel | External access via manoelneto.dev |
-| Secrets | SOPS + age | Encrypted secrets committed to the repo |
+| App Management | Portainer | Docker UI — deploy stacks, manage env vars |
 | Lint | tflint · ansible-lint · yamllint · actionlint | Code quality |
 
 ## Services
@@ -55,6 +55,7 @@ Cloudflare Tunnel → manoelneto.dev → NPM → internal services
 | Grafana + Prometheus + Loki | Observability stack |
 | Uptime Kuma | Uptime monitoring |
 | Homepage | Services dashboard |
+| Portainer | Docker container management UI |
 | Nginx Proxy Manager | Reverse proxy with SSL |
 
 ## CI/CD Pipeline
@@ -65,9 +66,9 @@ Three independent workflows, each triggered only when relevant files change:
 |---|---|---|
 | `lint.yml` | every push and PR | terraform fmt, tflint, ansible-lint, yamllint, actionlint |
 | `infra.yml` | changes to `infra/**` | init → validate → plan → apply |
-| `apps.yml` | changes to `apps/**`, `ansible/**`, `secrets/**` | decrypt secrets → bootstrap → deploy |
+| `apps.yml` | changes to `apps/**`, `ansible/**` | bootstrap docker-host + start Portainer |
 
-Infrastructure credentials (Proxmox, SSH keys, Tailscale authkey) live in GitHub Actions Secrets. Application secrets (DB passwords, service credentials) are encrypted with SOPS + age and committed to `secrets/apps.sops.yaml`.
+Infrastructure credentials (Proxmox, SSH keys, Tailscale authkey) live in GitHub Actions Secrets. Application secrets (DB passwords, service credentials) are managed via Portainer's environment variable UI — no credentials in the repository.
 
 ## Repository Structure
 
@@ -83,8 +84,7 @@ homelab/
 │   ├── group_vars/
 │   ├── inventory/
 │   ├── playbooks/
-│   │   ├── bootstrap.yml
-│   │   └── deploy.yml
+│   │   └── bootstrap.yml
 │   └── roles/docker/
 ├── apps/                   # Docker Compose — what runs as a service
 │   ├── proxy/
@@ -92,8 +92,7 @@ homelab/
 │   ├── uptime-kuma/
 │   ├── homepage/
 │   └── postgres/
-├── secrets/                # SOPS — encrypted secrets
-│   └── apps.sops.yaml
+├── secrets/                # SOPS structure (optional, for future use)
 └── .github/workflows/
     ├── lint.yml
     ├── infra.yml

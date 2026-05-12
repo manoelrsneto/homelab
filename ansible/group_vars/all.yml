@@ -1,9 +1,3 @@
 ---
-# Valores públicos
-grafana_admin_user: admin
-postgres_user: homelab
-postgres_db: homelab
-
-# grafana_admin_password e postgres_password vêm do CI:
-#   sops --decrypt secrets/apps.sops.yaml > /tmp/secrets.yml
-#   ansible-playbook deploy.yml --extra-vars @/tmp/secrets.yml
+# App secrets and environment variables are managed via Portainer UI.
+# No credentials are stored here or passed through CI.

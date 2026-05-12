@@ -34,7 +34,8 @@ grafana.manoelneto.dev  uptime.manoelneto.dev  home.manoelneto.dev
      Pi-hole           docker-host          homeassistant
  192.168.68.200      192.168.68.201         192.168.68.202
      LXC 100            LXC 101               VM 102
-                    ├── NPM                   (HAOS)
+                    ├── Portainer             (HAOS)
+                    ├── NPM
                     ├── Grafana
                     ├── Prometheus
                     ├── Loki + Promtail
@@ -78,10 +79,11 @@ grafana.manoelneto.dev  uptime.manoelneto.dev  home.manoelneto.dev
 
 ## Apps Layer
 
-Each service has its own Docker Compose stack under `apps/`. All stacks share the `homelab` Docker network. Boot order is managed by Ansible:
+Each service has its own Docker Compose stack under `apps/`. All stacks share the `homelab` Docker network. Portainer manages deployment and lifecycle of all stacks after the initial bootstrap.
 
 | Stack | Port | Description |
 |---|---|---|
+| portainer | 9000, 9443 | Container management UI |
 | postgres | 5432 (internal) | Centralized database |
 | monitoring | 3000, 9090, 3100 | Grafana + Prometheus + Loki + Promtail |
 | proxy | 80, 443, 81 | Nginx Proxy Manager |
@@ -96,13 +98,13 @@ Three independent workflows:
 |---|---|---|
 | `lint.yml` | every push and PR | terraform fmt, tflint, ansible-lint, yamllint, actionlint |
 | `infra.yml` | push to `infra/**` | terraform init → validate → plan → apply |
-| `apps.yml` | push to `apps/**`, `ansible/**`, `secrets/**` | decrypt SOPS → bootstrap → deploy |
+| `apps.yml` | push to `apps/**`, `ansible/**` | bootstrap docker-host + start Portainer |
 
 ## Secrets
 
-Sensitive secrets (DB passwords, service credentials) are encrypted with [SOPS](https://github.com/getsops/sops) + [age](https://github.com/FiloSottile/age) and committed to `secrets/apps.sops.yaml`. The CI decrypts them using the private key stored in GitHub Secrets as `SOPS_AGE_KEY`.
+Application secrets (DB passwords, service credentials) are managed through Portainer's environment variable UI per stack — no credentials are stored in the repository or passed through CI.
 
-No plaintext credentials are ever stored in the repository.
+Infrastructure credentials (Proxmox, SSH keys, Tailscale authkey) live in GitHub Actions Secrets.
 
 ## Design Decisions
 
@@ -124,5 +126,5 @@ Tailscale provides secure mesh VPN access without exposing any ports to the inte
 **Cloudflare Tunnel for public access**
 No open ports on the router. The tunnel is established outbound from the docker-host, keeping the network secure.
 
-**SOPS + age for secrets**
-Encrypting secrets in the repository makes the setup fully reproducible from a fresh clone. The age key is the only secret that lives outside the repo (GitHub Secrets).
+**Portainer for app management**
+Portainer provides a web UI for deploying and managing Docker Compose stacks, monitoring container health, and managing environment variables per stack. This removes the need for Ansible to handle app deployment and keeps credentials out of the repository entirely.
