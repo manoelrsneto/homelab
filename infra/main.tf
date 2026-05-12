@@ -31,7 +31,7 @@ module "containers" {
 
 module "vms" {
   source           = "./vms"
-  gateway          = var.gateway
-  pihole_ip        = var.pihole_ip
+  proxmox_url      = var.proxmox_url
+  proxmox_password = var.proxmox_password
   homeassistant_ip = var.homeassistant_ip
 }
