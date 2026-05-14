@@ -171,3 +171,4 @@ jobs:
         run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/bootstrap.yml --private-key ~/.ssh/homelab_ansible
         env:
           ANSIBLE_HOST_KEY_CHECKING: "False"
+          ANSIBLE_ROLES_PATH: ansible/roles
