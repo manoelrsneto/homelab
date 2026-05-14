@@ -92,13 +92,13 @@ Each service has its own Docker Compose stack under `apps/`. All stacks share th
 
 ## CI/CD
 
-Three independent workflows:
+Single `ci.yml` workflow. Lint jobs always run; deploy jobs only run when relevant paths change and require lint to pass first.
 
-| Workflow | Trigger | What it does |
+| Job | Trigger | Needs |
 |---|---|---|
-| `lint.yml` | every push and PR | terraform fmt, tflint, ansible-lint, yamllint, actionlint |
-| `infra.yml` | push to `infra/**` | terraform init → validate → plan → apply |
-| `apps.yml` | push to `apps/**`, `ansible/**` | bootstrap docker-host + start Portainer |
+| terraform-fmt, tflint, ansible-lint, yamllint, actionlint | every push and PR | — |
+| `terraform` | changes to `infra/**` | lint |
+| `bootstrap` | changes to `apps/**`, `ansible/**` | lint |
 
 ## Secrets
 

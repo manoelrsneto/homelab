@@ -1,0 +1,172 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  changes:
+    name: Detect Changes
+    runs-on: ubuntu-latest
+    outputs:
+      infra: ${{ steps.filter.outputs.infra }}
+      apps: ${{ steps.filter.outputs.apps }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            infra:
+              - 'infra/**'
+            apps:
+              - 'apps/**'
+              - 'ansible/**'
+
+  terraform-fmt:
+    name: Terraform Format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+        working-directory: infra
+
+  tflint:
+    name: TFLint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: terraform-linters/setup-tflint@v4
+
+      - name: Run tflint
+        run: tflint --recursive
+        working-directory: infra
+
+  ansible-lint:
+    name: Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install ansible-lint
+        run: pip install ansible-lint
+
+      - name: Run ansible-lint
+        run: ansible-lint
+        working-directory: ansible
+
+  yamllint:
+    name: YAML Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: yamllint .
+
+  actionlint:
+    name: Action Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run actionlint
+        run: |
+          bash <(curl -s https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+          ./actionlint -color
+
+  terraform:
+    name: Terraform
+    runs-on: ubuntu-latest
+    needs: [changes, terraform-fmt, tflint, yamllint, actionlint]
+    if: needs.changes.outputs.infra == 'true'
+    env:
+      TF_VAR_proxmox_url: ${{ secrets.PROXMOX_URL }}
+      TF_VAR_proxmox_user: ${{ secrets.PROXMOX_USER }}
+      TF_VAR_proxmox_password: ${{ secrets.PROXMOX_PASSWORD }}
+      TF_VAR_gateway: ${{ secrets.GATEWAY }}
+      TF_VAR_pihole_ip: ${{ secrets.PIHOLE_IP }}
+      TF_VAR_docker_host_ip: ${{ secrets.DOCKER_HOST_IP }}
+      TF_VAR_ansible_public_key: ${{ secrets.ANSIBLE_SSH_PUBLIC_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: infra
+
+      - name: Terraform Validate
+        run: terraform validate
+        working-directory: infra
+
+      - name: Terraform Plan
+        run: terraform plan
+        working-directory: infra
+
+      - name: Install sshpass
+        if: github.ref == 'refs/heads/main'
+        run: sudo apt-get install -y sshpass
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        run: terraform apply -auto-approve
+        working-directory: infra
+
+  bootstrap:
+    name: Bootstrap
+    runs-on: ubuntu-latest
+    needs: [changes, ansible-lint, yamllint, actionlint]
+    if: needs.changes.outputs.apps == 'true' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Connect Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          args: --accept-routes
+
+      - name: Write inventory
+        run: echo "${{ secrets.ANSIBLE_INVENTORY }}" > ansible/inventory/hosts.ini
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ANSIBLE_SSH_PRIVATE_KEY }}" > ~/.ssh/homelab_ansible
+          chmod 600 ~/.ssh/homelab_ansible
+
+      - name: Wait for SSH on docker host
+        run: |
+          IP=$(echo "${{ secrets.DOCKER_HOST_IP }}" | cut -d'/' -f1)
+          until ssh-keyscan -T 5 "$IP" 2>/dev/null | grep -q ssh; do
+            echo "waiting for SSH..."; sleep 5
+          done
+        timeout-minutes: 3
+
+      - name: Install Ansible
+        run: pip install ansible
+
+      - name: Bootstrap docker-host
+        run: ansible-playbook -i ansible/inventory/hosts.ini ansible/playbooks/bootstrap.yml --private-key ~/.ssh/homelab_ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: "False"

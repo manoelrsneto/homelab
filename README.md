@@ -1,8 +1,6 @@
 # homelab
 
-![Lint](https://img.shields.io/github/actions/workflow/status/manoelrsneto/homelab/lint.yml?style=for-the-badge&logo=github-actions&logoColor=white&label=Lint)
-![Infra](https://img.shields.io/github/actions/workflow/status/manoelrsneto/homelab/infra.yml?style=for-the-badge&logo=terraform&logoColor=white&label=Infra)
-![Apps](https://img.shields.io/github/actions/workflow/status/manoelrsneto/homelab/apps.yml?style=for-the-badge&logo=ansible&logoColor=white&label=Apps)
+![CI](https://img.shields.io/github/actions/workflow/status/manoelrsneto/homelab/ci.yml?style=for-the-badge&logo=github-actions&logoColor=white&label=CI)
 ![Proxmox](https://img.shields.io/badge/Proxmox-E57000?style=for-the-badge&logo=proxmox&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![Tailscale](https://img.shields.io/badge/Tailscale-242424?style=for-the-badge&logo=tailscale&logoColor=white)
@@ -18,10 +16,10 @@
 ## Architecture
 
 ```
-GitHub Actions
-    ├── lint.yml   →  terraform fmt · tflint · ansible-lint · yamllint · actionlint
-    ├── infra.yml  →  Proxmox (LXC + VM via Terraform)
-    └── apps.yml   →  Docker Host (bootstrap + deploy via Ansible)
+GitHub Actions (ci.yml)
+    ├── lint     →  terraform fmt · tflint · ansible-lint · yamllint · actionlint
+    ├── terraform →  Proxmox (LXC + VM via Terraform)  [needs: lint]
+    └── bootstrap →  Docker Host (Docker install + Portainer)  [needs: lint]
                            └── Docker Compose stacks (one per service)
 
 Tailscale mesh VPN
@@ -60,13 +58,13 @@ Cloudflare Tunnel → manoelneto.dev → NPM → internal services
 
 ## CI/CD Pipeline
 
-Three independent workflows, each triggered only when relevant files change:
+Single `ci.yml` workflow with path-based job gating:
 
-| Workflow | Trigger | Jobs |
+| Job | Trigger | Needs |
 |---|---|---|
-| `lint.yml` | every push and PR | terraform fmt, tflint, ansible-lint, yamllint, actionlint |
-| `infra.yml` | changes to `infra/**` | init → validate → plan → apply |
-| `apps.yml` | changes to `apps/**`, `ansible/**` | bootstrap docker-host + start Portainer |
+| lint (5 jobs) | every push and PR | — |
+| `terraform` | changes to `infra/**` | lint |
+| `bootstrap` | changes to `apps/**`, `ansible/**` | lint |
 
 Infrastructure credentials (Proxmox, SSH keys, Tailscale authkey) live in GitHub Actions Secrets. Application secrets (DB passwords, service credentials) are managed via Portainer's environment variable UI — no credentials in the repository.
 
@@ -94,9 +92,7 @@ homelab/
 │   └── postgres/
 ├── secrets/                # SOPS structure (optional, for future use)
 └── .github/workflows/
-    ├── lint.yml
-    ├── infra.yml
-    └── apps.yml
+    └── ci.yml
 ```
 
 ## Local Development
