@@ -4,8 +4,10 @@ services:
     restart: unless-stopped
     ports:
       - "3002:3000"
+    environment:
+      - HOMEPAGE_ALLOWED_HOSTS
     volumes:
-      - ./config:/app/config
+      - /etc/homelab/homepage/config:/app/config
     networks:
       - homelab
 
