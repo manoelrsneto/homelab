@@ -22,7 +22,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /etc/homelab/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
       - --config.file=/etc/prometheus/prometheus.yml
@@ -36,7 +36,7 @@ services:
     ports:
       - "3100:3100"
     volumes:
-      - ./loki.yml:/etc/loki/config.yml:ro
+      - /etc/homelab/monitoring/loki.yml:/etc/loki/config.yml:ro
       - loki_data:/loki
     command: -config.file=/etc/loki/config.yml
     networks:
@@ -46,7 +46,7 @@ services:
     image: grafana/promtail:latest
     restart: unless-stopped
     volumes:
-      - ./promtail.yml:/etc/promtail/config.yml:ro
+      - /etc/homelab/monitoring/promtail.yml:/etc/promtail/config.yml:ro
       - /var/log:/var/log:ro
     command: -config.file=/etc/promtail/config.yml
     networks:

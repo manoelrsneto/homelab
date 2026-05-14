@@ -27,6 +27,22 @@
         - '"already exists" not in network_result.stderr'
       changed_when: network_result.rc == 0
 
+    - name: Create /etc/homelab/monitoring directory
+      file:
+        path: /etc/homelab/monitoring
+        state: directory
+        mode: "0755"
+
+    - name: Copy monitoring configs to host
+      copy:
+        src: "../../apps/monitoring/{{ item }}"
+        dest: "/etc/homelab/monitoring/{{ item }}"
+        mode: "0644"
+      loop:
+        - prometheus.yml
+        - loki.yml
+        - promtail.yml
+
     - name: Start Portainer
       command: docker compose up -d
       args:
