@@ -37,7 +37,7 @@ resource "proxmox_virtual_environment_vm" "homeassistant" {
   }
 
   memory {
-    dedicated = 2048
+    dedicated = 3072
   }
 
   bios = "ovmf"
