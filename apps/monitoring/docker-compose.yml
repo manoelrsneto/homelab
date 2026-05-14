@@ -4,7 +4,9 @@ services:
     restart: unless-stopped
     ports:
       - "3000:3000"
-    env_file: .env
+    environment:
+      - GF_SECURITY_ADMIN_USER
+      - GF_SECURITY_ADMIN_PASSWORD
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:
